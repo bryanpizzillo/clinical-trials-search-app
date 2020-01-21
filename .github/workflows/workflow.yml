@@ -33,7 +33,7 @@ jobs:
       - name: npm ci, build, and test
         run: |
           npm ci
-          npm run build
+          CI="" npm run build
           npm test          
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
