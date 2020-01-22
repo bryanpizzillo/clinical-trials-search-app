@@ -1,18 +1,5 @@
-name: Main workflow
-on:
-  ## This tries to avoid unessesary pushes to forked repo
-  ## development branches. No sense in a dev building every
-  ## time they push for a PR and no one should be working on
-  ## common branches in their fork.
-  push:
-    branches:
-      - master
-      - develop
-      - 'hotfix/**'
-      - 'release/**'
-      - 'feature/**'
-  ## Any pull request. Yes the syntax looks weird
-  pull_request:
+name: Pull Request CI Workflow
+on: [pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,9 +7,14 @@ jobs:
       matrix:
         node-version: [10.x, 12.x]
     steps:
-      ## This clones and checks out.
+      ## Set vars
+      ## ${GITHUB_REF#refs/heads/} for push of branch
+      ## OR
+      ## ${GITHUB_REF#refs/tags/} for a tag
+      ## Do not use ${GITHUB_REF##*} as that does not work
+      ## with gitflow naming (e.g. feature/my-cool-feature)
       - name: Checkout branch
-        uses: actions/checkout@v1
+        uses: actions/checkout@v1        
       ## This installs the correct node version
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
@@ -38,3 +30,10 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
+      ## Echo build information to file
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v1
+        with:
+          name: dist
+          path: build
+         
