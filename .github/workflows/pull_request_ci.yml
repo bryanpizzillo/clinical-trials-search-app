@@ -7,9 +7,21 @@ jobs:
       matrix:
         node-version: [10.x, 12.x]
     steps:
-
       - name: Checkout branch
-        uses: actions/checkout@v1        
+        uses: actions/checkout@v1
+      ## Pull requests differ from a push in that the
+      ## build name needs to be the PR number. We will
+      ## name it the same as push_ci so that most of
+      ## the next steps will be copyable.
+      - name: Set build_name
+        id: build_name
+        run: echo ::set-output name=build::$(echo "pr_${{ github.event.pull_request.number }}")
+      - name: Set build_name
+        id: branch_name
+        run: echo ::set-output name=build::$(echo "pr_${{ github.event.pull_request.number }}")
+      - name: Set Commit Hash
+        id: github_sha
+        run: echo ::set-output name=sha::$(echo "${{ github.event.pull_request.head.sha }}")
       ## This installs the correct node version
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
@@ -26,9 +38,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CI: true
       ## Echo build information to file
+      - name: Create Build Information File
+        working-directory: ./build
+        run: |
+          echo "Branch: ${{ steps.branch_name.outputs.branch }}" >> buildinfo.txt
+          echo "Commit: ${{ steps.github_sha.outputs.sha }}" >> buildinfo.txt
       - name: Archive production artifacts
         uses: actions/upload-artifact@v1
         with:
-          name: dist
+          name: ${{ steps.build_name.outputs.build }}
           path: build
-         
