@@ -57,8 +57,7 @@ jobs:
       - name: change default
         shell: bash
         run: |
-          ls -l /usr/bin
-          sudo update-alternatives --install /usr/bin/python python ${pythonLocation}/bin/python3 10
+          sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 10
       - name: Upload artifact to netstorage
         shell: python
         env:
