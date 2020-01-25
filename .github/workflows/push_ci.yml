@@ -57,10 +57,14 @@ jobs:
         with:
           name: ${{ steps.build_name.outputs.build }}
           path: build
+      - name: change default
+        shell: bash
+        run: |
+          sudo update-alternatives --install /usr/bin/python python ${pythonLocation}/bin/python3.8 10
       - name: Upload artifact to netstorage
         shell: python
         env:
-          ARTIFACT_FILENAME: ${{ join(steps.build_name.outputs.build,'.zip') }}
+          ARTIFACT_FILENAME: ${{ format('{0}.zip', steps.build_name.outputs.build) }}
         run: |
           import os, sys
 
