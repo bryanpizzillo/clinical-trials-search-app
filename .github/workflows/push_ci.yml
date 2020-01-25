@@ -61,7 +61,7 @@ jobs:
         shell: bash
         run: |
           ls /usr/bin
-          sudo update-alternatives --install /usr/bin/python python ${pythonLocation}/bin/python3.8 10
+          sudo update-alternatives --install /usr/bin/python python ${pythonLocation}/bin/python3 10
       - name: Upload artifact to netstorage
         shell: python
         env:
