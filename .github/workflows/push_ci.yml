@@ -57,3 +57,13 @@ jobs:
         with:
           name: ${{ steps.build_name.outputs.build }}
           path: build
+      - name: Upload artifact to netstorage
+        shell: python
+        env:
+          ARTIFACT_FILENAME: ${{ join(steps.build_name.outputs.build,'.zip') }}
+        run: |
+          import os, sys
+
+          ARTIFACT_FILENAME = os.environ.get('ARTIFACT_FILENAME')
+          print(ARTIFACT_FILENAME)
+          print(sys.version)
