@@ -14,9 +14,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [12.x]
     steps:
       - name: Checkout branch
         uses: actions/checkout@v1
@@ -32,10 +29,10 @@ jobs:
         id: github_sha
         run: echo ::set-output name=sha::$(echo "${GITHUB_SHA}")
       ## This installs the correct node version
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Use Node.js 12.x
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 12.x
           registry-url: 'https://npm.pkg.github.com'
       ## This runs multiple commands to run.
       - name: npm ci, build, and test
@@ -60,7 +57,7 @@ jobs:
       - name: change default
         shell: bash
         run: |
-          ls /usr/bin
+          ls -l /usr/bin
           sudo update-alternatives --install /usr/bin/python python ${pythonLocation}/bin/python3 10
       - name: Upload artifact to netstorage
         shell: python
