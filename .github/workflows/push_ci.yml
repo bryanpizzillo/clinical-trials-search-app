@@ -30,7 +30,8 @@ jobs:
         run: echo ::set-output name=sha::$(echo "${GITHUB_SHA}")
       - name: Dump GitHub context
         env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}        
+          GITHUB_CONTEXT: ${{ toJson(github) }}   
+        run: echo "$GITHUB_CONTEXT"     
       ## This installs the correct node version
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
