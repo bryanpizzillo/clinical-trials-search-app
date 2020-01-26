@@ -28,6 +28,15 @@ jobs:
       - name: Set Commit Hash
         id: github_sha
         run: echo ::set-output name=sha::$(echo "${GITHUB_SHA}")
+      ## Gets the owner and repo from the 
+      - name: Set repo info
+        id: repo_info
+        run: |
+          export REPO_NAME=${{ github.repository }}
+          export REPO_RE='([^/]+)/(.*)'
+          [[ $GITHUB_REPO =~ $REPO_RE ]]
+          echo ::set-output name=owner::$(echo "${BASH_REMATCH[1]}")
+          echo ::set-output name=repo::$(echo "${BASH_REMATCH[2]}")
       - name: Dump GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}   
@@ -57,11 +66,20 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: ${{ steps.build_name.outputs.build }}
-          path: build
-      - name: change default
+          path: build          
+      - name: Force using python3 for shell
         shell: bash
         run: |
           sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 10
+      - name: Cache pip
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/pip # This path is specific to Ubuntu
+          # Look to see if there is a cache hit for the corresponding requirements file
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+            ${{ runner.os }}-          
       - name: install python modules
         shell: bash
         run: |
@@ -73,7 +91,7 @@ jobs:
           NS_KEYNAME: ${{ secrets.ns_keyname }}
           NS_KEY: ${{ secrets.ns_key }}
           NS_CPCODE: ${{ secrets.ns_cpcode }}
-          REPO_NAME: TODO
+          REPO_NAME: ${{ steps.repo_info.output.repo }}
           ARTIFACT_FILENAME: ${{ format('{0}.zip', steps.build_name.outputs.build) }}
         run: |
           import os
