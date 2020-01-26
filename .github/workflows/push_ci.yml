@@ -28,6 +28,9 @@ jobs:
       - name: Set Commit Hash
         id: github_sha
         run: echo ::set-output name=sha::$(echo "${GITHUB_SHA}")
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}        
       ## This installs the correct node version
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
@@ -58,13 +61,35 @@ jobs:
         shell: bash
         run: |
           sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 10
+      - name: install python modules
+        shell: bash
+        run: |
+          pip install -Iv netstorageapi==1.2.12
       - name: Upload artifact to netstorage
         shell: python
         env:
+          NS_HOSTNAME: ${{ secrets.ns_hostname }}
+          NS_KEYNAME: ${{ secrets.ns_keyname }}
+          NS_KEY: ${{ secrets.ns_key }}
+          NS_CPCODE: ${{ secrets.ns_cpcode }}
+          REPO_NAME: TODO
           ARTIFACT_FILENAME: ${{ format('{0}.zip', steps.build_name.outputs.build) }}
         run: |
-          import os, sys
+          import os
+          from akamai.netstorage import Netstorage, NetstorageError
 
+          NS_HOSTNAME = os.environ.get('NS_HOSTNAME')
+          NS_KEYNAME = os.environ.get('NS_KEYNAME')
+          NS_KEY = os.environ.get('NS_KEY')
+          NS_CPCODE = os.environ.get('NS_CPCODE')
+          REPO_NAME = os.environ.get('REPO_NAME')
           ARTIFACT_FILENAME = os.environ.get('ARTIFACT_FILENAME')
-          print(ARTIFACT_FILENAME)
-          print(sys.version)
+          REPO_NAME = os.environ.get('REPO_NAME')
+          ARTIFACT_FILENAME = os.environ.get('ARTIFACT_FILENAME')
+
+          local_source = os.path.join(os.getcwd(), ARTIFACT_FILENAME)
+          netstorage_destination = '/{0}/{1}/{2}'.format(NS_CPCODE, REPO_NAME, ARTIFACT_FILENAME)
+
+          print(local_source)
+          print(netstorage_destination)
+          # Rest goes here
