@@ -34,7 +34,7 @@ jobs:
         run: |
           export REPO_NAME=${{ github.repository }}
           export REPO_RE='([^/]+)/(.*)'
-          [[ $GITHUB_REPO =~ $REPO_RE ]]
+          [[ $REPO_NAME =~ $REPO_RE ]]
           echo ::set-output name=owner::$(echo "${BASH_REMATCH[1]}")
           echo ::set-output name=repo::$(echo "${BASH_REMATCH[2]}")
       - name: Dump GitHub context
