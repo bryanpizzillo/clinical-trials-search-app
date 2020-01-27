@@ -75,17 +75,15 @@ jobs:
         run: |
           echo "Branch: ${{ steps.set_vars.outputs.branch_name }}" >> buildinfo.txt
           echo "Commit: ${{ steps.set_vars.outputs.commit_hash }}" >> buildinfo.txt
-      ## Zip up and upload build folder to the run's artifact list
-      ## this zip can be referenced elsewhere.
+      ## Upload the built artifact
       - name: Archive production artifacts
         uses: actions/upload-artifact@v1
         with:
           name: ${{ steps.set_vars.outputs.build_name }}
           path: build
-      ## Now download it so that we may upload it to Akamai
-      - uses: actions/download-artifact@master
-        with:
-          name: ${{ steps.set_vars.outputs.build_name }}
+      - name: test
+        run: |
+          ls -l 
       ## Hack for forcing python3 because using the python shell
       ## by default uses 2.7
       - name: Force using python3 for shell
