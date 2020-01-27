@@ -38,16 +38,21 @@ jobs:
           [[ "$REPO_NAME" =~ $REPO_RE ]]
           echo ::set-output name=repo_owner::${BASH_REMATCH[1]}
           echo ::set-output name=repo_name::${BASH_REMATCH[2]}
-      - uses: actions/github-script@0.4.0
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '👋 Thanks for reporting!'
-            })      
+
+      # TODO: Find the right artifact
+      # TODO: Check to make sure it is not a fork
+      # TODO: Add comment on PR hwne build is done
+
+      # - uses: actions/github-script@0.4.0
+      #   with:
+      #     github-token: ${{secrets.GITHUB_TOKEN}}
+      #     script: |
+      #       github.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: '👋 Thanks for reporting!'
+      #       })      
       ## This installs the correct node version
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
