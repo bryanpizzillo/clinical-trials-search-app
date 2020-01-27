@@ -38,6 +38,16 @@ jobs:
           [[ "$REPO_NAME" =~ $REPO_RE ]]
           echo ::set-output name=repo_owner::${BASH_REMATCH[1]}
           echo ::set-output name=repo_name::${BASH_REMATCH[2]}
+      - uses: actions/github-script@0.4.0
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '👋 Thanks for reporting!'
+            })      
       ## This installs the correct node version
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
@@ -70,7 +80,7 @@ jobs:
       ## Now download it so that we may upload it to Akamai
       - uses: actions/download-artifact@master
         with:
-          name: ${{ format('{0}.zip', steps.set_vars.outputs.build_name) }}
+          name: ${{ steps.set_vars.outputs.build_name }}
       ## Hack for forcing python3 because using the python shell
       ## by default uses 2.7
       - name: Force using python3 for shell
