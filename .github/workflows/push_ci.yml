@@ -15,16 +15,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      ## Gets code for the branch that is to be build
       - name: Checkout branch
         uses: actions/checkout@v1
-      ## We want the name to be 'develop' or 'release_v1.1.0'
-      ## or in the case of a tag, 'v1.1.0'        
+      ## Sets variables to be used by the upcoming steps
+      ## ::set-output is fancy Github Actions stuff to set
+      ## output variables so that they can be access later
+      ## by referencing
+      ## ${{ steps.<step_id>.outputs.<var_name> }}
       - name: Set Variables
         id: set_vars
         run: |
+          ## For artifact file name
           echo ::set-output name=build_name::$(sed -E 's/refs\/(heads|tags)\///; s/\//_/g;' <<< $GITHUB_REF)
+          ## For buildinfo.txt
           echo ::set-output name=branch_name::$(sed -E 's/refs\/(heads|tags)\///;' <<< $GITHUB_REF)
+          ## For buildinfo.txt
           echo ::set-output name=commit_hash::$(echo "${GITHUB_SHA}")
+          ## For step checks and artifact deployment path.
           export REPO_NAME=${{ github.repository }}
           export REPO_RE='([^/]+)/(.*)'
           [[ "$REPO_NAME" =~ $REPO_RE ]]
@@ -36,10 +44,11 @@ jobs:
         with:
           node-version: 12.x
           registry-url: 'https://npm.pkg.github.com'
-      ## This runs multiple commands to run.
+      ## This does the build and test
       - name: npm ci, build, and test
         run: |
           npm ci
+          ## CI="" is a hack because we have so many warnings
           CI="" npm run build
           npm test          
         env:
@@ -51,19 +60,29 @@ jobs:
         run: |
           echo "Branch: ${{ steps.set_vars.outputs.branch_name }}" >> buildinfo.txt
           echo "Commit: ${{ steps.set_vars.outputs.commit_hash }}" >> buildinfo.txt
+      ## Zip up and upload build folder to the run's artifact list
+      ## this zip can be referenced elsewhere.
       - name: Archive production artifacts
         uses: actions/upload-artifact@v1
         with:
           name: ${{ steps.set_vars.outputs.build_name }}
-          path: build          
+          path: build
+      ## Now download it so that we may upload it to Akamai
+      - uses: actions/download-artifact@master
+        with:
+          name: ${{ format('{0}.zip', steps.set_vars.outputs.build_name) }}
+      ## Hack for forcing python3 because using the python shell
+      ## by default uses 2.7
       - name: Force using python3 for shell
         shell: bash
         run: |
           sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 10
+      ## Install the Akamai netstorage module
       - name: install python modules
         shell: bash
         run: |
           pip install -Iv netstorageapi==1.2.12
+      ## Actually do the upload
       - name: Upload artifact to netstorage
         shell: python
         env:
@@ -88,7 +107,8 @@ jobs:
 
           local_source = os.path.join(os.getcwd(), ARTIFACT_FILENAME)
           netstorage_destination = '/{0}/{1}/{2}'.format(NS_CPCODE, REPO_NAME, ARTIFACT_FILENAME)
-
+          
           print(local_source)
+          print(os.path.exists(local_source))
           print(netstorage_destination)
           # Rest goes here
